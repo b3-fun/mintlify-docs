@@ -1,0 +1,93 @@
+---
+title: Actions Introduction
+description: Overview of the B3OS action system
+---
+
+# Actions
+
+Actions are the building blocks of B3OS workflows. With **280+ actions** across **21 providers**, you can automate virtually any blockchain operation, data query, or integration.
+
+## Action Types
+
+<Tabs>
+  <Tab title="Built-in">
+    Execute within the workflow engine. Fast, no external dependencies.
+
+    Examples: `log`, `delay`, `filter`, `format`, `storage`, `code-transform`, `trigger-workflow`
+
+    [Full reference -->](/actions/built-in)
+
+  </Tab>
+  <Tab title="Logic">
+    Control flow primitives that determine execution order.
+
+    Examples: `if` (branching), `for-each` (loops), `wait` (pause until event)
+
+  </Tab>
+  <Tab title="Dynamic">
+    Execute via the b3os-actions TypeScript service. These call external APIs and interact with blockchains.
+
+    Organized by **provider** (e.g., `coingecko:get-coin-info`, `evm-onchain:send-erc20-token`).
+
+  </Tab>
+</Tabs>
+
+## Providers at a Glance
+
+<CardGroup cols={2}>
+  <Card title="EVM On-Chain" icon="ethereum" href="/actions/evm-onchain">
+    20+ actions for blockchain transactions, token ops, DEX swaps
+  </Card>
+  <Card title="CoinGecko" icon="chart-line" href="/actions/defi">
+    49 actions for cryptocurrency market data
+  </Card>
+  <Card title="Coinglass" icon="chart-bar" href="/actions/defi">
+    86 actions for derivatives analytics
+  </Card>
+  <Card title="Polymarket" icon="scale-balanced" href="/actions/defi">
+    11 actions for prediction market trading
+  </Card>
+  <Card title="Messaging" icon="message" href="/actions/messaging">
+    Slack, Discord, Telegram, Email
+  </Card>
+  <Card title="Pipedream" icon="puzzle-piece" href="/actions/messaging">
+    57+ actions for Google, Notion, Airtable, Twitter, and access to 2,000+ apps
+  </Card>
+</CardGroup>
+
+### Full Provider Table
+
+| Provider                             | Actions | Category                                                      |
+| ------------------------------------ | ------- | ------------------------------------------------------------- |
+| [EVM On-Chain](/actions/evm-onchain) | 20+     | Blockchain transactions, token ops, DEX swaps                 |
+| [Aerodrome](/actions/defi)           | 4       | Base DEX rewards & liquidity                                  |
+| [Morpho](/actions/defi)              | 5       | DeFi lending                                                  |
+| [CoinGecko](/actions/defi)           | 49      | Cryptocurrency market data                                    |
+| [Coinglass](/actions/defi)           | 86      | Derivatives analytics                                         |
+| [Polymarket](/actions/defi)          | 11      | Prediction market trading                                     |
+| [Messaging](/actions/messaging)      | 4       | Slack, Discord, Telegram, Email                               |
+| [Pipedream](/actions/messaging)      | 57+     | Google, Notion, Airtable, Twitter (2,000+ apps via Pipedream) |
+| [DeBank](/actions/defi)              | 1       | DeFi portfolio data                                           |
+| [Dune](/actions/defi)                | 1       | Blockchain SQL queries                                        |
+| [Zerion](/actions/defi)              | 5       | Portfolio tracking                                            |
+| [Sim/Dune](/actions/defi)            | 8       | Wallet & token data                                           |
+| [Firecrawl](/actions/messaging)      | 2       | Web scraping                                                  |
+| [Utility](/actions/built-in)         | 6       | HTTP, AI chat, math, random                                   |
+| [Social](/actions/messaging)         | 2       | Farcaster, Twitter                                            |
+| [Shopify](/actions/messaging)        | 6       | E-commerce operations                                         |
+| [Railgun](/actions/evm-onchain)      | 7       | Private transactions                                          |
+| [Plume](/actions/defi)               | 3       | Leverage trading                                              |
+| [Magna](/actions/defi)               | 6       | Token distribution                                            |
+| [Clanker](/actions/defi)             | 6       | Token factory                                                 |
+| [AnySpend](/actions/evm-onchain)     | 2       | Cross-chain dispersal                                         |
+
+<Info>
+  Via the Pipedream connector, B3OS can integrate with **2,000+ apps** including Twilio SMS, Shopify, Notion, Airtable,
+  and more. If there's an API for it, you can likely automate it.
+</Info>
+
+## Discovery
+
+<Tip>
+  Use the API to browse available actions programmatically, or explore the full catalog in the dashboard's Actions tab.
+</Tip>

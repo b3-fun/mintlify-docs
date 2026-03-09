@@ -1,0 +1,88 @@
+---
+title: Organizations
+description: Organization management and team collaboration
+---
+
+# Organizations
+
+Organizations are the top-level workspace in B3OS. All resources (workflows, wallets, connectors, and compute units) are scoped to an organization.
+
+## Creating an Organization
+
+When you sign up, you create your first organization. You can create additional organizations for different projects or teams.
+
+## Members
+
+Organizations support multiple members. Use the `X-Org-ID` header in API calls to specify which organization context to use.
+
+<Tip>
+  Each member has either an **Owner** or **Developer** role. Owners have full access, while Developers have workflow
+  CRUD and run monitoring. See [Security](/platform/security) for the full permission breakdown.
+</Tip>
+
+## Team Invitations
+
+Invite team members via email from the dashboard or API:
+
+- Invitations expire after **7 days**
+- Invitees receive an email with a join link
+- Once accepted, the member gains access to all org resources based on their assigned role
+
+<Note>Ownership transfer is supported. The current owner can hand off ownership to another member.</Note>
+
+## Audit Trail
+
+<Check>B3OS tracks changes across your organization for compliance and debugging.</Check>
+
+- **Wallet operations**: Transaction history and signing events
+- **API keys**: Creation, deletion, and last-used timestamps
+- **Membership**: Invitations, joins, role changes, removals
+- **Execution history**: Every workflow run with full state snapshots (which nodes ran, data flow, conditional decisions)
+
+## Compute Units (CU)
+
+Compute units are consumed when workflow runs execute. Your monthly CU allocation depends on your plan, starting at 40K/month on the free tier up to 20M/month on Business. Enterprise plans get custom allocations.
+
+<Note>
+  Monitor your CU usage from the dashboard to avoid hitting limits. Daily CU usage summaries are also available via the
+  API.
+</Note>
+
+### CU Tracking
+
+- Each action node in a workflow run consumes CU
+- Built-in actions consume minimal CU
+- Dynamic actions (external API calls, blockchain transactions) consume more CU
+
+See [Pricing](https://b3os.org/pricing) for plan details.
+
+## Organization Storage
+
+Organizations have shared key-value storage accessible across all workflows:
+
+<CodeGroup>
+```text Default Store
+{{$org.storage.key}}
+```
+
+```text Named Store
+{{$org.stores.myStore.key}}
+```
+
+</CodeGroup>
+
+Use `org-storage-set`, `org-storage-get`, and `org-storage-list` actions to manage shared state.
+
+## D1 Database
+
+Each organization can provision a dedicated D1 (SQLite) database for structured data storage. Use the `db-query` action to execute SQL queries.
+
+Supported operations:
+
+- `SELECT`: Query data
+- `INSERT`: Add records
+- `UPDATE`: Modify records
+- `DELETE`: Remove records
+- `CREATE TABLE`: Define schema
+
+<Warning>`DROP` and `ALTER` are restricted for safety.</Warning>

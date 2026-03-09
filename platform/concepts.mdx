@@ -1,0 +1,168 @@
+---
+title: Core Concepts
+description: Key concepts and terminology in B3OS
+---
+
+# Core Concepts
+
+<AccordionGroup>
+  <Accordion title="Workflow" icon="diagram-project">
+    A workflow is an automation definition consisting of a trigger and a directed acyclic graph (DAG) of action nodes. Workflows progress through a controlled lifecycle:
+
+    | State | Description |
+    |-------|-------------|
+    | **Draft** | Being edited, not yet live |
+    | **Active** | Trigger is registered, workflow fires on events |
+    | **Paused** | Trigger deregistered, can be resumed |
+    | **Archived** | Soft-deleted, hidden from listings |
+
+    Each workflow contains:
+    - **Definition**: JSON graph of nodes (trigger + actions + control flow)
+    - **UIMetadata**: Canvas layout for the visual editor
+    - **Configuration**: Max runs, cooldown period, CU budget
+
+    <Tip>Workflows support **templates** with typed props and schema validation, enabling reusable, parameterized automations across teams.</Tip>
+
+  </Accordion>
+
+  <Accordion title="Run" icon="play">
+    A run is a single execution of a workflow. Runs capture:
+    - A snapshot of the workflow definition at execution time
+    - **ExecutionState**: A map of node progress and results
+    - **TriggerSource**: The event that initiated the run
+
+    | State | Description |
+    |-------|-------------|
+    | **Running** | Currently executing nodes |
+    | **Success** | All nodes completed successfully |
+    | **Failure** | A node failed and no error handler caught it |
+    | **Waiting** | Paused on a `wait` node, awaiting resume event |
+
+    <Note>Run completion uses **compare-and-swap (CAS) protection** on JSONB and **row-level locking** to prevent race conditions in concurrent execution.</Note>
+
+  </Accordion>
+
+  <Accordion title="Node" icon="circle-nodes">
+    A node is a single step in a workflow. Nodes are connected in a directed graph with sequential and branching execution.
+
+    **Node Types:**
+    - **Trigger**: The entry point; defines what starts the workflow
+    - **Action**: Executes an operation (built-in, dynamic, or logic)
+    - **Control Flow**: `if/else`, `for-each`, `filter`, `pluck`, `wait`
+
+    **Node Structure:**
+    - **Children**: Nodes that execute after this node completes
+    - **LoopBody**: For `for-each` nodes, the subgraph that runs per item
+    - **Connector**: Optional reference to stored credentials
+    - **Props**: Configuration parameters for the action
+
+    <Warning>
+      **For-Each Budget** -- Three hard limits prevent runaway loops:
+      - **100** iterations per loop
+      - **10,000** total nodes across all nesting levels
+      - **10** levels of nesting depth
+
+      Validated at both workflow creation and execution time.
+    </Warning>
+
+  </Accordion>
+
+  <Accordion title="Trigger" icon="bolt">
+    The event source that starts a workflow. B3OS supports 7 trigger categories:
+
+    | Category | Examples |
+    |----------|----------|
+    | Token prices | Real-time via Stork Oracle WebSocket |
+    | Blockchain events | EVM logs, ERC-20 transfers across 12+ chains |
+    | Schedules | Cron expressions |
+    | Webhooks | Inbound HTTP from any service |
+    | Messaging | Slack mentions, Gmail |
+    | Prediction markets | Polymarket trades, market resolution |
+    | Manual | On-demand via dashboard or API |
+
+    See [Triggers](/platform/triggers) for the full reference.
+
+  </Accordion>
+
+  <Accordion title="Action" icon="gear">
+    An operation performed by a node. 280+ action types across 21 providers:
+
+    - **Built-in**: Execute within the workflow engine (delay, filter, log, storage, code-transform, db-query)
+    - **Dynamic**: Execute via the b3os-actions service (blockchain transactions, DeFi, APIs, messaging)
+    - **Logic**: Control flow actions (if, for-each, filter, pluck, wait)
+
+    <Note>All blockchain transactions are signed by **Turnkey HSM**. Private keys never leave the secure hardware enclave.</Note>
+
+    See [Actions Overview](/platform/actions-overview) for details.
+
+  </Accordion>
+
+  <Accordion title="Expression" icon="code">
+    A template string that references data from other nodes. Expressions are resolved at runtime before a node executes, with **type preservation** (numbers stay numbers, not strings).
+
+    ```
+    {{trigger.result.amount}}
+    {{node-abc.result.balance}}
+    {{$storage.lastPrice}}
+    {{$org.stores.myStore.key}}
+    ```
+
+    See [Expressions](/platform/expressions) for the full syntax.
+
+  </Accordion>
+
+  <Accordion title="Organization" icon="building">
+    A team workspace that owns workflows, wallets, connectors, and compute units. All resources are scoped to an organization with **full data isolation** between tenants.
+
+    Organizations support:
+    - **Member management** with Owner and Developer roles (21 permissions)
+    - **Shared storage**: Key-value stores accessible across workflows
+    - **D1 Database**: Dedicated SQLite database per org for structured data
+    - **API keys**: Up to 50 scoped keys with SHA-256 hashing and usage tracking
+
+  </Accordion>
+
+  <Accordion title="Compute Units (CU)" icon="gauge">
+    Each workflow run consumes compute units. CU allocation depends on your plan:
+
+    | Plan | CU / Month | Active Workflows | AI Credits |
+    |------|-----------|-------------------|------------|
+    | **Free** | 40K | 3 | 500 |
+    | **Starter** ($19/mo) | 400K | 10 | 1,000 |
+    | **Pro** ($99/mo) | 2M | 25 | 2,000 |
+    | **Business** ($499/mo) | 20M | 50 | 4,000 |
+    | **Enterprise** | Custom | Unlimited | Custom |
+
+    <Tip>Annual billing saves ~17% (12 months for the price of 10). Additional discounts available when paying with $B3.</Tip>
+
+    - Built-in actions consume minimal CU
+    - Dynamic actions and AI interactions consume more based on complexity
+    - Redis-first metering provides sub-millisecond cost accounting
+
+    See [Pricing](https://b3os.org/pricing) for full details.
+
+  </Accordion>
+
+  <Accordion title="Connector" icon="plug">
+    Reusable encrypted credentials that actions reference at runtime. Connectors keep sensitive data out of workflow definitions:
+
+    - Encrypted at rest with **AES-256-GCM** (authenticated encryption)
+    - Decrypted only in-memory during action execution
+    - Never exposed in API responses or run logs
+    - Organization-scoped, available to all workflows within the org
+
+  </Accordion>
+
+  <Accordion title="AI Agent" icon="robot">
+    B3OS includes an AI agent with 17+ specialized tools for natural language workflow generation. The agent can:
+
+    - Search the action catalog and resolve full I/O schemas
+    - Query live token prices, wallet balances, and DeFi positions
+    - Generate production-ready workflow JSON with schema validation and auto-repair
+    - Apply incremental JSON patches for modifications (not full regeneration)
+    - Access organization knowledge via pgvector semantic search
+
+    The agent uses a multi-model strategy (GPT via OpenRouter, Claude Haiku for memory, Nvidia Nemotron for cost optimization) with persistent chat memory for long sessions.
+
+  </Accordion>
+</AccordionGroup>

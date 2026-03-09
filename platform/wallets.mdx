@@ -1,0 +1,48 @@
+---
+title: Wallets
+description: Turnkey-backed wallet system for on-chain operations
+---
+
+# Wallets
+
+B3OS provides organization-scoped wallets for executing on-chain transactions. Wallets are backed by **Turnkey HSM** (Hardware Security Module) for secure key management.
+
+## How Wallets Work
+
+Each organization has wallets that can be used by any workflow within the org. When an action needs to sign a transaction (e.g., `send-erc20-token`, `deploy-contract`), it uses the organization's wallet.
+
+<Note>
+  Wallets are automatically created when you create an organization. You can also create additional wallets via the API.
+</Note>
+
+## Turnkey HSM
+
+<Callout icon="shield-halved" color="#4CAF50">
+  Private keys are managed by Turnkey -- a non-custodial key management infrastructure. B3OS never has access to your
+  private keys.
+</Callout>
+
+- **Keys never leave the HSM**: Signing happens inside Turnkey's secure hardware
+- **Non-custodial**: B3OS does not have access to your private keys
+- **Multi-chain**: The same wallet works across all supported EVM chains
+
+## Supported Operations
+
+Wallets enable on-chain actions across supported EVM chains:
+
+| Operation          | Action Type                                      |
+| ------------------ | ------------------------------------------------ |
+| Send native tokens | `send-native-token`                              |
+| Send ERC-20 tokens | `send-erc20-token`                               |
+| Approve spending   | `approve-erc20`                                  |
+| Wrap/Unwrap ETH    | `wrap-eth`, `unwrap-eth`                         |
+| Contract calls     | `evm-write`                                      |
+| Deploy contracts   | `deploy-contract`                                |
+| DeFi operations    | Morpho deposits, Aerodrome claims, Uniswap swaps |
+
+## Supported Chains
+
+<Tip>
+  Wallets work on any EVM-compatible chain supported by B3OS, including Ethereum Mainnet, Base, Arbitrum, Optimism,
+  Polygon, and more.
+</Tip>

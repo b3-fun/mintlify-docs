@@ -1,0 +1,221 @@
+---
+title: Triggers
+description: All trigger types available in B3OS
+---
+
+# Triggers
+
+Every workflow starts with a trigger -- the event that initiates a run. B3OS supports several trigger types across different detection methods.
+
+## Detection Methods
+
+| Trigger          | Detection                 | Latency              |
+| ---------------- | ------------------------- | -------------------- |
+| Token Price      | WebSocket (Stork Oracle)  | Real-time push       |
+| EVM Logs         | HTTP polling + filter     | 100ms loop           |
+| ERC-20 Transfers | HTTP polling + filter     | 100ms loop           |
+| Cron Schedule    | Cron expression scan      | 100ms loop           |
+| Webhook          | HTTP endpoint listener    | On-demand            |
+| Slack / Gmail    | Webhook adapter / polling | On-demand / periodic |
+| Polymarket       | WebSocket subscription    | Real-time push       |
+
+<Tabs>
+  <Tab title="General">
+    ## Manual
+
+    Trigger a workflow on demand via the dashboard or API.
+
+    ```json
+    {
+      "type": "manual",
+      "props": {}
+    }
+    ```
+
+    ## Cron Schedule
+
+    Run a workflow on a recurring schedule using cron syntax.
+
+    ```json
+    {
+      "type": "cronjob",
+      "props": {
+        "schedule": "0 */6 * * *"
+      }
+    }
+    ```
+
+    | Field | Description |
+    |-------|-------------|
+    | `schedule` | Standard cron expression (minute hour day month weekday) |
+
+    ## Webhook
+
+    Trigger via HTTP POST to a unique webhook URL. The request body becomes the trigger result.
+
+    ```json
+    {
+      "type": "webhook",
+      "props": {}
+    }
+    ```
+
+    <Tip>A unique webhook URL is generated when the workflow is published.</Tip>
+
+  </Tab>
+
+  <Tab title="Blockchain">
+    ## EVM Log
+
+    Fire when a smart contract emits a specific event log on any supported EVM chain.
+
+    ```json
+    {
+      "type": "evm-log",
+      "props": {
+        "chainId": 8453,
+        "address": "0x...",
+        "eventSignature": "Transfer(address,address,uint256)",
+        "filter": {
+          "from": "0x..."
+        }
+      }
+    }
+    ```
+
+    | Field | Description |
+    |-------|-------------|
+    | `chainId` | EVM chain ID (e.g., 8453 for Base) |
+    | `address` | Contract address to watch |
+    | `eventSignature` | Event signature with types |
+    | `filter` | Optional filter DSL on decoded log fields |
+
+    <Note>The handler polls `eth_getLogs` with block cursor persistence and supports multiple chains concurrently.</Note>
+
+    ## ERC-20 Receive
+
+    Fire when a specific address receives ERC-20 tokens.
+
+    ```json
+    {
+      "type": "erc20-receive",
+      "props": {
+        "chainId": 8453,
+        "address": "0x...",
+        "tokenAddress": "0x..."
+      }
+    }
+    ```
+
+    ## ERC-20 Send
+
+    Fire when a specific address sends ERC-20 tokens.
+
+    ```json
+    {
+      "type": "erc20-send",
+      "props": {
+        "chainId": 8453,
+        "address": "0x...",
+        "tokenAddress": "0x..."
+      }
+    }
+    ```
+
+  </Tab>
+
+  <Tab title="Market Data">
+    ## Token Price
+
+    Fire when a token's price crosses a threshold. Powered by real-time WebSocket from Stork Oracle.
+
+    ```json
+    {
+      "type": "token-price-cexes",
+      "props": {
+        "asset": "BTCUSD",
+        "operator": ">",
+        "price": 100000
+      }
+    }
+    ```
+
+    | Field | Description |
+    |-------|-------------|
+    | `asset` | Asset pair (e.g., `BTCUSD`, `ETHUSD`) |
+    | `operator` | Comparison: `>`, `<`, `>=`, `<=`, `==` |
+    | `price` | Target price threshold |
+
+  </Tab>
+
+  <Tab title="Messaging">
+    ## Slack Mentions
+
+    Fire when your bot is mentioned in a Slack channel.
+
+    ```json
+    {
+      "type": "slack-mentions",
+      "props": {
+        "channelId": "C0123456789"
+      }
+    }
+    ```
+
+    <Info>Requires a Slack connector with bot token.</Info>
+
+    ## Gmail
+
+    Fire on new emails or emails matching a search query.
+
+    | Type | Description |
+    |------|-------------|
+    | `gmail-new-email-received` | Any new email in inbox |
+    | `gmail-new-email-matching-search` | Emails matching a Gmail search query |
+
+    <Note>Powered by Pipedream polling integration.</Note>
+
+  </Tab>
+
+  <Tab title="Prediction Markets">
+    ## Polymarket
+
+    B3OS includes several Polymarket-specific triggers:
+
+    | Type | Description |
+    |------|-------------|
+    | `polymarket-market-close` | When a prediction market resolves |
+    | `polymarket-market-trade` | Real-time trades on a market |
+    | `polymarket-new-market` | New market creation (with keyword filters) |
+    | `polymarket-user-bet` | When a specific user places a bet |
+
+    ### Market Trade Filters
+
+    ```json
+    {
+      "type": "polymarket-market-trade",
+      "props": {
+        "conditionId": "0x...",
+        "outcome": "Yes",
+        "side": "BUY",
+        "minSize": 100
+      }
+    }
+    ```
+
+    ### User Bet Filters
+
+    ```json
+    {
+      "type": "polymarket-user-bet",
+      "props": {
+        "username": "trader123",
+        "side": "BUY",
+        "minSize": 50,
+        "keywords": ["election", "bitcoin"]
+      }
+    }
+    ```
+
+  </Tab>
+</Tabs>

@@ -1,0 +1,140 @@
+---
+title: AI Agent
+description: Natural language workflow generation and intelligent assistant
+---
+
+# AI Agent
+
+B3OS includes a built-in AI agent that turns natural language into fully functional workflows. Instead of manually wiring nodes together, describe what you want and the agent builds it for you.
+
+## What It Does
+
+The agent operates in three modes:
+
+<CardGroup cols={3}>
+  <Card title="Generate" icon="wand-magic-sparkles">
+    Describe an automation in plain English and get a complete workflow with triggers, actions, and connections.
+  </Card>
+  <Card title="Modify" icon="pen-to-square">
+    Ask the agent to change an existing workflow. It applies targeted patches instead of regenerating everything,
+    preserving your customizations.
+  </Card>
+  <Card title="Chat" icon="comments">
+    Ask questions about your workflows, available actions, blockchain concepts, or how to wire things together.
+  </Card>
+</CardGroup>
+
+## How It Works
+
+<Steps>
+  <Step title="You describe what you want">
+    Type a message like "Send me a Slack alert whenever ETH drops below $2,000" or "Create a weekly portfolio rebalancer
+    for my Morpho positions."
+  </Step>
+  <Step title="The agent plans and builds">
+    The agent searches available actions and triggers, resolves schemas, fetches any needed on-chain data, and assembles
+    a valid workflow definition.
+  </Step>
+  <Step title="You review and deploy">
+    The generated workflow appears in the canvas editor. Review the nodes, tweak any parameters, and publish when ready.
+  </Step>
+</Steps>
+
+## 17+ Specialized Tools
+
+The agent has access to real-time data and platform knowledge to build accurate workflows.
+
+<Tabs>
+  <Tab title="Workflow Discovery">
+    | Tool | What it does | |------|-------------| | Action search | Browse 280+ actions across 21 providers | | Schema
+    resolution | Look up input/output schemas for any action | | ABI fetcher | Fetch on-chain contract ABIs for EVM
+    interactions | | Template browser | Search pre-built workflow templates | | Trigger lookup | Find the right trigger
+    type for any use case |
+  </Tab>
+  <Tab title="Real-time Data">
+    | Tool | What it does | |------|-------------| | Token prices | Live prices from CoinGecko and exchanges | | Wallet
+    balances | Check balances across chains | | DeFi positions | Current lending/LP positions and yields | | Yield
+    optimization | Compare APYs across protocols | | Prediction markets | Polymarket odds and orderbook data |
+  </Tab>
+  <Tab title="Knowledge">
+    | Tool | What it does | |------|-------------| | Org documents | Semantic search across uploaded docs | | Google
+    Sheets | Read spreadsheet data for context | | Web search | Look up current information | | Analytics queries |
+    Discover and run Dune queries | | Existing workflows | Reference your org's workflow patterns |
+  </Tab>
+</Tabs>
+
+## Knowledge Sources
+
+The agent uses a 3-layer retrieval system to generate accurate, context-aware workflows:
+
+<Steps>
+  <Step title="Layer 1: AI Profile">
+    Static system context including B3OS feature documentation, action/trigger specifications, and platform
+    capabilities.
+  </Step>
+  <Step title="Layer 2: Org Knowledge">
+    Semantic search over your organization's uploaded documents and notes using pgvector embeddings. The agent
+    understands your team's specific context.
+  </Step>
+  <Step title="Layer 3: Recipe Index">
+    Fuzzy matching against a library of workflow patterns and common automation recipes. Helps the agent suggest proven
+    configurations.
+  </Step>
+</Steps>
+
+## Model Architecture
+
+The agent routes to different models depending on the task:
+
+| Task                                 | Model              | Why                                     |
+| ------------------------------------ | ------------------ | --------------------------------------- |
+| Workflow generation and tool-calling | GPT via OpenRouter | Best tool-calling and structured output |
+| Conversation memory extraction       | Claude Haiku       | Fast, accurate summarization            |
+| Cost-optimized fallback              | Nvidia Nemotron    | Free-tier backup for simple queries     |
+| Vision (screenshot analysis)         | Claude Sonnet      | Strong image understanding              |
+
+<Info>No single vendor lock-in. Model routing is transparent and can be switched at the deployment level.</Info>
+
+## Streaming and Sessions
+
+<AccordionGroup>
+  <Accordion title="Real-time streaming" icon="signal-stream">
+    Responses stream in real-time via SSE (Server-Sent Events). You see the agent's thinking and output as it generates,
+    not after.
+  </Accordion>
+  <Accordion title="Persistent chat memory" icon="brain">
+    Long conversations are automatically summarized to preserve key context without hitting token limits. The agent
+    remembers what you discussed earlier in the session.
+  </Accordion>
+  <Accordion title="Session management" icon="clock-rotate-left">
+    Chat sessions persist across page reloads. You can pick up where you left off or start a new session for a different
+    task.
+  </Accordion>
+  <Accordion title="Vision input" icon="image">
+    Attach screenshots of dashboards, charts, or interfaces. The agent processes images and incorporates visual context
+    into workflow generation.
+  </Accordion>
+</AccordionGroup>
+
+## Smart Generation
+
+<CardGroup cols={2}>
+  <Card title="Schema Validation" icon="shield-check">
+    Generated workflows are validated against action schemas. If something is invalid, the agent auto-repairs it before
+    showing you the result.
+  </Card>
+  <Card title="Incremental Patches" icon="code-compare">
+    When modifying existing workflows, the agent applies surgical JSON patches instead of regenerating from scratch.
+    Your manual tweaks stay intact.
+  </Card>
+  <Card title="Org-aware" icon="building">
+    The agent knows your organization's connectors, wallets, existing workflows, and uploaded documents. It generates
+    workflows that work with your setup.
+  </Card>
+  <Card title="Multi-model" icon="microchip">
+    The agent routes to the best model for each task. No single vendor lock-in. Model selection is transparent and
+    optimized for quality and cost.
+  </Card>
+</CardGroup>
+
+<Tip>The AI agent is available directly in the workflow editor. Click the chat icon to start a conversation.</Tip>

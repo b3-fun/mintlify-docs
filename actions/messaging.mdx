@@ -1,0 +1,89 @@
+---
+title: Messaging & Integration Actions
+description: Messaging, social media, and third-party integration actions
+---
+
+# Messaging & Integration Actions
+
+<AccordionGroup>
+  <Accordion title="Direct Messaging" icon="message">
+    Send messages to popular messaging platforms:
+
+    | Action | Description |
+    |--------|-------------|
+    | `send-slack-message` | Send a message to a Slack channel |
+    | `send-discord-message` | Send a message to a Discord channel |
+    | `send-telegram-message` | Send a message via Telegram bot |
+    | `send-email` | Send an email |
+
+    <Note>All messaging actions require a **connector** with the appropriate bot token or credentials.</Note>
+
+  </Accordion>
+
+<Accordion title="Social Media" icon="share-nodes">
+  | Action | Description | |--------|-------------| | `post-farcaster-cast` | Post a cast to Farcaster | |
+  `search-twitter-user-tweets` | Search tweets by a specific user |
+</Accordion>
+
+<Accordion title="Pipedream: Slack (30+ actions)" icon="slack">
+  Full Slack API coverage including: - Send messages, reply to threads - Create and manage channels - Upload files, add
+  reactions - Invite users, set topics
+</Accordion>
+
+<Accordion title="Pipedream: Google Workspace" icon="google">
+  | Action | Description | |--------|-------------| | Gmail | Send emails, search, manage labels | | Google Sheets |
+  Read/write spreadsheet data |
+</Accordion>
+
+<Accordion title="Pipedream: Notion" icon="book">
+  | Action | Description | |--------|-------------| | `create-page` | Create a new Notion page | | `update-page` |
+  Update page properties | | `append-block` | Append content blocks |
+</Accordion>
+
+<Accordion title="Pipedream: Airtable" icon="table">
+  | Action | Description | |--------|-------------| | `create-record` | Create a new record | | `list-records` | List
+  records in a table |
+</Accordion>
+
+<Accordion title="Pipedream: Twitter" icon="twitter">
+  | Action | Description | |--------|-------------| | `create-tweet` | Post a tweet | | `send-dm` | Send a direct
+  message |
+</Accordion>
+
+<Accordion title="Pipedream: Other Integrations" icon="puzzle-piece">
+  - **Twilio**: Send SMS messages - **Telegram**: Send messages, manage groups - **QuickBooks**: Create purchases,
+  manage accounts - **Philips Hue**: Control smart lights
+</Accordion>
+
+<Accordion title="Firecrawl (Web Scraping)" icon="spider">
+  | Action | Description | |--------|-------------| | `scrape-url` | Scrape a web page for content | | `search-web` |
+  Search and fetch web content |
+</Accordion>
+
+<Accordion title="Utility" icon="wrench">
+  | Action | Description | |--------|-------------| | `http-request` | Make arbitrary HTTP requests | | `ai-llm-chat` |
+  Chat with an LLM (AI-powered text generation) | | `ai-format-message` | Format messages using AI | | `math-operation`
+  | Perform mathematical calculations | | `generate-id` | Generate unique identifiers | | `random-number` | Generate
+  random numbers |
+</Accordion>
+
+  <Accordion title="Shopify" icon="shop">
+    E-commerce operations:
+
+    | Action | Description |
+    |--------|-------------|
+    | `search-products` | Search product catalog |
+    | `create-customer` | Create a new customer |
+    | `create-draft-order` | Create a draft order |
+    | `complete-draft-order` | Complete a draft order |
+    | `cancel-order` | Cancel an order |
+    | `adjust-inventory` | Adjust inventory levels |
+
+  </Accordion>
+
+  <Accordion title="X402 Protected Resources" icon="credit-card">
+    | Action | Description |
+    |--------|-------------|
+    | `call-x402-protected-resource` | Call payment-gated APIs using the x402 protocol |
+  </Accordion>
+</AccordionGroup>

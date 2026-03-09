@@ -1,0 +1,125 @@
+---
+title: Security
+description: Defense-in-depth security architecture for B3OS
+---
+
+# Security
+
+B3OS implements defense-in-depth security across authentication, data isolation, credential management, and transaction signing.
+
+## Authentication
+
+<Callout icon="key" color="#FFC107">
+  Triple authentication layer supporting three credential types -- JWT tokens, API keys, and master keys.
+</Callout>
+
+| Method          | Mechanism                                | Use Case                         |
+| --------------- | ---------------------------------------- | -------------------------------- |
+| **JWT Tokens**  | Validated via B3-API service             | Dashboard and web clients        |
+| **API Keys**    | SHA-256 hashed, constant-time comparison | Server-to-server integrations    |
+| **Master Keys** | `Bearer MASTER_KEY:USER_ID` pattern      | Internal/self-hosted deployments |
+
+<Note>
+  API keys are stored as SHA-256 hashes. The raw key is shown once at creation and never retrievable. Constant-time
+  comparison prevents timing attacks.
+</Note>
+
+## Organization Isolation
+
+<Warning>
+  Every database query is filtered by organization ID. Middleware verifies membership via live DB lookup on every
+  request.
+</Warning>
+
+- Workflows, connectors, runs, storage, API keys, and wallets are fully isolated
+- Each org gets an isolated Turnkey sub-organization for key management
+
+## Role-Based Access Control
+
+Two roles with 21 individual permissions:
+
+| Role          | Access                                                                          |
+| ------------- | ------------------------------------------------------------------------------- |
+| **Owner**     | Full access to workflows, connectors, API keys, org settings, member management |
+| **Developer** | Workflow CRUD, run monitoring, limited connector access                         |
+
+<Info>
+  API keys carry their own scope (read-only or read-write), enforced independently of the creating user's role. Max 50
+  keys per org with last-used tracking for audit and rotation planning.
+</Info>
+
+## Credential Encryption
+
+<Callout icon="shield-halved" color="#4CAF50">
+  All sensitive credentials are encrypted at rest using **AES-256-GCM** (authenticated encryption).
+</Callout>
+
+- 32-byte encryption key with 12-byte random nonces
+- GCM mode provides both encryption and tamper detection (modified ciphertext fails to decrypt)
+- Storage format: nonce concatenated with ciphertext
+- Decrypted only in-memory at execution time, never logged, never exposed in API responses
+
+Encrypted credential types:
+
+- API keys and OAuth tokens (connectors)
+- Wallet references
+- Webhook headers marked as sensitive
+
+## Transaction Signing
+
+<Note>
+  Blockchain transactions are signed by **Turnkey HSM** (Hardware Security Module). Private keys live in a secure
+  enclave and never leave the HSM.
+</Note>
+
+- Keys are generated, stored, and used entirely within Turnkey's infrastructure
+- Each organization gets an isolated sub-organization with its own key hierarchy
+- P256 curve with configurable approval quorum
+- The B3OS application never has access to private keys
+
+## Webhook Validation
+
+Inbound webhook payloads are verified against SHA-256 hashed secrets:
+
+- Per-organization webhook secrets
+- Rotatable with usage tracking
+- HMAC verification on every inbound payload
+
+<Warning>
+  Outbound webhooks (via `send-webhook` action) include SSRF protection, validating URLs against private IP ranges
+  before sending.
+</Warning>
+
+## Execution Safety
+
+<AccordionGroup>
+  <Accordion title="For-Each Budget System" icon="shield">
+    Three hard limits prevent runaway loops:
+
+    | Limit | Value |
+    |-------|-------|
+    | Iterations per loop | 100 |
+    | Total nodes across all nesting | 10,000 |
+    | Nesting depth | 10 levels |
+
+    Validated at both workflow creation and execution time for defense-in-depth.
+
+  </Accordion>
+
+<Accordion title="Trigger Workflow Recursion" icon="rotate">
+  The `trigger-workflow` action tracks recursion depth and caps at 10 levels to prevent infinite chains.
+</Accordion>
+
+  <Accordion title="Database Query Restrictions" icon="database">
+    The `db-query` action restricts SQL to DML operations (SELECT, INSERT, UPDATE, DELETE) and CREATE TABLE. DROP and ALTER statements are blocked.
+  </Accordion>
+</AccordionGroup>
+
+## Audit Trail
+
+<Check>
+  Complete audit trail for wallet operations, API key creation/deletion, organization membership changes, and workflow
+  execution history.
+</Check>
+
+Every run preserves a full execution state snapshot: which nodes ran, what data flowed through each step, and why conditional decisions were made.

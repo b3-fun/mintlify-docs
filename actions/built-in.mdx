@@ -1,0 +1,231 @@
+---
+title: Built-in Actions
+description: Actions that execute within the B3OS workflow engine
+---
+
+# Built-in Actions
+
+Built-in actions execute directly within the workflow engine without external API calls. They are fast and consume minimal compute units.
+
+<AccordionGroup>
+  <Accordion title="log" icon="file-lines">
+    Log a message with a timestamp. Useful for debugging and audit trails.
+
+    | Parameter | Type | Required | Description |
+    |-----------|------|----------|-------------|
+    | `message` | string | Yes | Message to log |
+
+    **Result:**
+    ```json
+    { "message": "string", "loggedAt": "string" }
+    ```
+
+  </Accordion>
+
+<Accordion title="delay" icon="clock">
+  Pause workflow execution for a specified duration. The actual timing is managed by the task queue (Asynq), not a
+  blocking sleep.
+</Accordion>
+
+  <Accordion title="filter" icon="filter">
+    Filter an array of objects using a MongoDB-style filter DSL.
+
+    | Parameter | Type | Required | Description |
+    |-----------|------|----------|-------------|
+    | `array` | array | Yes | Array of objects to filter |
+    | `filter` | object | Yes | Filter DSL with operators (`$eq`, `$gt`, `$and`, etc.) |
+
+    **Result:**
+    ```json
+    { "filtered": [] }
+    ```
+
+  </Accordion>
+
+  <Accordion title="format" icon="align-left">
+    Format data into a string using template syntax.
+
+    | Parameter | Type | Required | Description |
+    |-----------|------|----------|-------------|
+    | `data` | array or object | Yes | Data to format |
+    | `template` | string | Yes | Template with `{{@field}}` placeholders |
+    | `separator` | string | No | Join separator for arrays (default: `\n`) |
+
+    **Result:**
+    ```json
+    { "formatted": "string" }
+    ```
+
+  </Accordion>
+
+  <Accordion title="pluck" icon="hand-pointer">
+    Extract a single field from each object in an array.
+
+    | Parameter | Type | Required | Description |
+    |-----------|------|----------|-------------|
+    | `array` | array | Yes | Array of objects |
+    | `field` | string | Yes | Field name to extract (supports nested: `user.address`) |
+
+    **Result:**
+    ```json
+    { "values": [] }
+    ```
+
+  </Accordion>
+
+  <Accordion title="regex" icon="text-slash">
+    Extract named capture groups from text using regular expressions.
+
+    | Parameter | Type | Required | Description |
+    |-----------|------|----------|-------------|
+    | `text` | string | Yes | Text to match against |
+    | `pattern` | string | Yes | RE2 regex with named groups `(?P<name>...)` |
+    | `global` | boolean | No | Find all matches (default: false) |
+
+    **Result:**
+    ```json
+    { "matched": true, "matches": {} }
+    ```
+
+  </Accordion>
+
+  <Accordion title="storage" icon="database">
+    Set a workflow-scoped key-value pair that persists between runs.
+
+    | Parameter | Type | Required | Description |
+    |-----------|------|----------|-------------|
+    | `key` | string | Yes | Storage key |
+    | `value` | any | Yes | Value to store |
+
+    <Tip>Access stored values in expressions: `{{$storage.key}}`</Tip>
+
+  </Accordion>
+
+  <Accordion title="org-storage-get / set / list" icon="building">
+    Read, write, and list organization-scoped storage.
+
+    **org-storage-get:**
+
+    | Parameter | Type | Required | Description |
+    |-----------|------|----------|-------------|
+    | `key` | string | Yes | Storage key |
+    | `store` | string | No | Named store (default: `"default"`) |
+
+    **org-storage-set:**
+
+    | Parameter | Type | Required | Description |
+    |-----------|------|----------|-------------|
+    | `key` | string | Yes | Storage key (no dots allowed) |
+    | `value` | any | Yes | Value to store |
+    | `store` | string | No | Named store (default: `"default"`) |
+
+    **org-storage-list:**
+
+    | Parameter | Type | Required | Description |
+    |-----------|------|----------|-------------|
+    | `prefix` | string | No | Filter keys by prefix |
+    | `limit` | number | No | Max keys to return (1-100, default: 50) |
+    | `offset` | number | No | Pagination offset |
+    | `store` | string | No | Named store (default: `"default"`) |
+
+  </Accordion>
+
+  <Accordion title="code-transform" icon="code">
+    Execute custom JavaScript code transformations via a sandboxed runtime.
+
+    | Parameter | Type | Required | Description |
+    |-----------|------|----------|-------------|
+    | `code` | string | Yes | JavaScript code to execute |
+    | `input` | any | Yes | Input data |
+    | `inputType` | object | No | JSON schema for input validation |
+    | `outputType` | object | No | JSON schema for output validation |
+    | `timeout` | number | No | Timeout in milliseconds |
+
+    **Result:**
+    ```json
+    { "output": "any", "executionTimeMs": 0, "language": "javascript" }
+    ```
+
+  </Accordion>
+
+  <Accordion title="send-webhook" icon="paper-plane">
+    Send an HTTPS POST request to an external URL. Includes SSRF protection.
+
+    | Parameter | Type | Required | Description |
+    |-----------|------|----------|-------------|
+    | `url` | string | Yes | HTTPS webhook URL |
+    | `headers` | object | No | HTTP headers |
+    | `body` | object | No | JSON request body |
+    | `maxRetries` | number | No | Retry count (default: 3) |
+
+    **Result:**
+    ```json
+    { "deliveryId": "string", "status": "pending", "url": "string" }
+    ```
+
+    <Warning>Only HTTPS URLs are allowed. Private IP ranges are blocked for SSRF protection.</Warning>
+
+  </Accordion>
+
+  <Accordion title="trigger-workflow" icon="share">
+    Trigger another workflow within the same organization. Fire-and-forget with recursion depth limiting (max 10).
+
+    | Parameter | Type | Required | Description |
+    |-----------|------|----------|-------------|
+    | `workflowId` | string | Yes | Target workflow ID |
+    | `payload` | object | No | Data passed as trigger result |
+
+  </Accordion>
+
+  <Accordion title="db-query" icon="table">
+    Execute SQL against the organization's D1 database. Supports SELECT, INSERT, UPDATE, DELETE, and CREATE TABLE.
+
+    | Parameter | Type | Required | Description |
+    |-----------|------|----------|-------------|
+    | `sql` | string | Yes | SQL query (max 10,000 chars) |
+    | `params` | array | No | Parameterized query values |
+
+    **Result:**
+    ```json
+    { "rows": [], "rowsAffected": 0, "lastRowId": 0 }
+    ```
+
+    <Warning>DROP and ALTER statements are blocked for safety.</Warning>
+
+  </Accordion>
+
+  <Accordion title="deploy-contract" icon="file-contract">
+    Deploy a smart contract to a blockchain network or sandbox.
+
+    | Parameter | Type | Required | Description |
+    |-----------|------|----------|-------------|
+    | `bytecode` | string | Yes | Contract bytecode (hex) |
+    | `abi` | object | No | Contract ABI |
+    | `chainId` | number | Yes* | Target chain ID (*required for network deploy) |
+    | `constructorArgs` | array | No | Constructor arguments |
+    | `target` | string | No | `"sandbox"` or network name |
+
+  </Accordion>
+
+  <Accordion title="verify-contract" icon="circle-check">
+    Verify a deployed contract's source code.
+
+    | Parameter | Type | Required | Description |
+    |-----------|------|----------|-------------|
+    | `contractProjectId` | string | No | Project ID |
+    | `sourceCode` | string | No | Contract source code |
+
+  </Accordion>
+
+  <Accordion title="x402-endpoint" icon="credit-card">
+    Call a payment-gated (x402) API endpoint with price protection.
+
+    | Parameter | Type | Required | Description |
+    |-----------|------|----------|-------------|
+    | `endpointId` | string | Yes | Endpoint ID from registry |
+    | `maxPrice` | number | No | Maximum price override |
+    | `queryParams` | object | No | Query parameters |
+    | `body` | object | No | Request body |
+
+  </Accordion>
+</AccordionGroup>

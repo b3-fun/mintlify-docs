@@ -1,0 +1,72 @@
+---
+title: API Introduction
+description: B3OS REST API overview
+---
+
+# API Introduction
+
+The B3OS API is a RESTful HTTP API for managing workflows, runs, organizations, and all platform resources.
+
+## Base URL
+
+```
+api.b3os.org
+```
+
+## Response Format
+
+All API responses follow a consistent envelope format:
+
+<CodeGroup>
+```json Success
+{
+  "success": true,
+  "data": {
+    // Response payload
+  }
+}
+```
+
+```json Paginated
+{
+  "success": true,
+  "data": [
+    // Array of items
+  ],
+  "hasMore": true
+}
+```
+
+```json Error
+{
+  "success": false,
+  "error": {
+    "message": "Description of what went wrong",
+    "code": "ERROR_CODE"
+  }
+}
+```
+
+</CodeGroup>
+
+## Pagination
+
+List endpoints support cursor-based pagination:
+
+| Parameter | Type   | Description                                 |
+| --------- | ------ | ------------------------------------------- |
+| `limit`   | number | Items per page (default varies by endpoint) |
+| `offset`  | number | Number of items to skip                     |
+
+<Tip>Check the `hasMore` field to determine if more pages exist.</Tip>
+
+## Rate Limiting
+
+<Warning>
+  The API enforces rate limits per organization. If you exceed the limit, you'll receive a `429 Too Many Requests`
+  response. Respect the `Retry-After` header.
+</Warning>
+
+## OpenAPI Spec
+
+The full API specification is available as an OpenAPI 3.0 document. Browse the auto-generated reference in the [Endpoints](/api/reference) section.

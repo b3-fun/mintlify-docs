@@ -1,0 +1,125 @@
+---
+title: Workflows
+description: Workflow lifecycle, definition structure, and status management
+---
+
+# Workflows
+
+A workflow is the core unit of automation in B3OS. It defines what triggers an execution and what actions to perform.
+
+## Lifecycle
+
+<Steps>
+  <Step title="Draft">When you create a workflow, it starts as a **draft**. Edits are made to the draft version.</Step>
+  <Step title="Publish">
+    **Publish** the draft to make it live. The published version is what the trigger system uses.
+  </Step>
+  <Step title="Active">
+    The trigger is registered and the workflow fires on matching events. You can **pause** it at any time.
+  </Step>
+  <Step title="Paused / Archived">
+    **Paused** workflows have their trigger deregistered but can be resumed. **Archived** workflows are soft-deleted and
+    hidden from listings.
+  </Step>
+</Steps>
+
+## Definition Structure
+
+A workflow definition is a JSON graph of nodes:
+
+```json
+{
+  "trigger": {
+    "id": "trigger-1",
+    "type": "cronjob",
+    "props": {
+      "schedule": "0 */6 * * *"
+    },
+    "children": ["action-1"]
+  },
+  "nodes": {
+    "action-1": {
+      "id": "action-1",
+      "type": "coingecko:get-coin-info",
+      "props": {
+        "coinId": "bitcoin"
+      },
+      "children": ["action-2"]
+    },
+    "action-2": {
+      "id": "action-2",
+      "type": "log",
+      "props": {
+        "message": "BTC price: {{action-1.result.market_data.current_price.usd}}"
+      }
+    }
+  }
+}
+```
+
+## Run Execution
+
+When a trigger fires:
+
+<Steps>
+  <Step title="Run created">A **run** is created with a snapshot of the current workflow definition.</Step>
+  <Step title="Trigger result stored">The trigger result is stored in `ExecutionState` under the key `trigger`.</Step>
+  <Step title="Nodes execute">
+    Nodes execute sequentially following the `children` graph. Each node's result is stored in `ExecutionState[nodeId]`.
+  </Step>
+  <Step title="Data flows downstream">
+    Downstream nodes can reference upstream results via [expressions](/platform/expressions).
+  </Step>
+</Steps>
+
+### Run States
+
+| State     | Description                       |
+| --------- | --------------------------------- |
+| `running` | Nodes are actively executing      |
+| `success` | All nodes completed without error |
+| `failure` | A node threw an error             |
+| `waiting` | Execution paused on a `wait` node |
+
+### Cooldown
+
+<Info>
+  Workflows support a **cooldown period** (in milliseconds) to prevent rapid re-triggering. If a trigger fires during
+  cooldown, the run is skipped.
+</Info>
+
+### Max Runs
+
+<Tip>
+  You can set a **max runs** limit. Once reached, the workflow is automatically paused. Use `refill` to add more runs.
+</Tip>
+
+## Testing Triggers
+
+Before publishing a workflow to production, you can simulate triggers to verify your configuration:
+
+<Steps>
+  <Step title="Fire a test trigger">
+    Use the dashboard or API to send a test event that matches your trigger configuration.
+  </Step>
+  <Step title="Watch the run execute">
+    The workflow runs in test mode with real-time result streaming, so you can see exactly what each node produces.
+  </Step>
+  <Step title="Fix issues early">
+    Catch configuration errors, missing connectors, or expression bugs before the workflow goes live.
+  </Step>
+</Steps>
+
+<Tip>
+  Always test your trigger before publishing. It saves debugging time and prevents unexpected behavior in production.
+</Tip>
+
+## Configuration
+
+| Field         | Type   | Description                    |
+| ------------- | ------ | ------------------------------ |
+| `name`        | string | Workflow display name          |
+| `description` | string | What the workflow does         |
+| `maxRuns`     | number | Maximum runs before auto-pause |
+| `cooldown`    | number | Minimum ms between runs        |
+| `definition`  | object | Node graph (trigger + actions) |

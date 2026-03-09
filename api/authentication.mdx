@@ -1,0 +1,86 @@
+---
+title: Authentication
+description: API authentication methods for B3OS
+---
+
+# Authentication
+
+All B3OS API requests require authentication via a Bearer token in the `Authorization` header.
+
+## Getting Started
+
+<Steps>
+  <Step title="Sign in">
+    Sign in at [b3os.org](https://b3os.org).
+  </Step>
+  <Step title="Generate an API key">
+    Navigate to **Settings > API Keys** and generate a new API key.
+
+    <Warning>The raw key is shown only once at creation. Store it securely -- it cannot be retrieved later.</Warning>
+
+  </Step>
+  <Step title="Use the key in requests">
+    Pass your key as a Bearer token along with your organization ID:
+
+    ```bash
+    curl api.b3os.org/v1/workflows \
+      -H "Authorization: Bearer YOUR_TOKEN" \
+      -H "X-Org-ID: YOUR_ORG_ID"
+    ```
+
+  </Step>
+</Steps>
+
+## Organization Context
+
+Most endpoints require an organization context. Pass the `X-Org-ID` header:
+
+<CodeGroup>
+```bash cURL
+curl api.b3os.org/v1/workflows \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Org-ID: org_abc123"
+```
+
+```javascript JavaScript
+const response = await fetch("api.b3os.org/v1/workflows", {
+  headers: {
+    Authorization: "Bearer YOUR_TOKEN",
+    "X-Org-ID": "org_abc123",
+  },
+});
+```
+
+</CodeGroup>
+
+## Master Key Pattern
+
+<Info>
+  For server-to-server integrations, you can use the master key pattern. This is only available in self-hosted or
+  internal deployments.
+</Info>
+
+```
+Authorization: Bearer MASTER_KEY:USER_ID
+```
+
+This authenticates as a specific user using a server-side master key.
+
+## Validating Your Token
+
+To verify your token is valid and see your identity, list your organizations:
+
+```bash
+curl api.b3os.org/v1/organizations \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+A successful response confirms your token is valid and returns your accessible organizations.
+
+## Error Responses
+
+| Status             | Description                                                   |
+| ------------------ | ------------------------------------------------------------- |
+| `401 Unauthorized` | Missing or invalid token                                      |
+| `403 Forbidden`    | Token valid but lacks permission for this resource            |
+| `404 Not Found`    | Resource not found or not accessible with current org context |

@@ -1,122 +1,113 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "B3OS Docs",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#007AFF",
+    "light": "#4DA6FF",
+    "dark": "#0056CC"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
   "navigation": {
-    "tabs": [
+    "languages": [
       {
-        "tab": "Guides",
-        "groups": [
+        "language": "en",
+        "name": "English",
+        "tabs": [
           {
-            "group": "Getting started",
-            "pages": [
-              "index",
-              "quickstart",
-              "development"
+            "icon": "circle-nodes",
+            "tab": "Platform",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": ["index", "quickstart"]
+              },
+              {
+                "group": "Workflows",
+                "pages": [
+                  "platform/architecture",
+                  "platform/concepts",
+                  "platform/workflows",
+                  "platform/triggers",
+                  "platform/actions-overview",
+                  "platform/expressions"
+                ]
+              },
+              {
+                "group": "AI Agent",
+                "pages": ["platform/ai-agent"]
+              },
+              {
+                "group": "Organizations",
+                "pages": ["platform/organizations", "platform/connectors", "platform/wallets"]
+              },
+              {
+                "group": "Security",
+                "pages": ["platform/security"]
+              }
+            ],
+            "global": {
+              "anchors": [
+                {
+                  "anchor": "B3OS App",
+                  "href": "https://b3os.org",
+                  "icon": "globe"
+                },
+                {
+                  "anchor": "Discord",
+                  "href": "https://discord.gg/b3dotfun",
+                  "icon": "discord"
+                }
+              ]
+            }
+          },
+          {
+            "icon": "code",
+            "tab": "API Reference",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": ["api/introduction", "api/authentication"]
+              },
+              {
+                "group": "Endpoints",
+                "pages": [
+                  {
+                    "group": "B3OS Workflow API",
+                    "openapi": {
+                      "source": "/openapi/b3os-workflow.json",
+                      "directory": "api/reference"
+                    }
+                  }
+                ]
+              }
             ]
           },
           {
-            "group": "Customization",
-            "pages": [
-              "essentials/settings",
-              "essentials/navigation"
-            ]
-          },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API reference",
-        "groups": [
-          {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+            "icon": "bolt",
+            "tab": "Actions",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": ["actions/introduction", "actions/built-in", "actions/triggers"]
+              },
+              {
+                "group": "Providers",
+                "pages": ["actions/evm-onchain", "actions/defi", "actions/messaging"]
+              }
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
+    ]
   },
   "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+    "options": ["copy", "view", "chatgpt", "claude", "perplexity", "cursor", "vscode"]
   },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+  "scripts": [
+    {
+      "src": "/replace-footer.js",
+      "strategy": "lazyOnload"
     }
-  }
+  ]
 }

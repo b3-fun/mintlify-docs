@@ -1,0 +1,138 @@
+---
+title: Architecture
+description: B3OS platform architecture and system design
+---
+
+# Architecture
+
+B3OS is a distributed workflow automation engine for blockchain operations. Four coordinating processes orchestrate event detection, DAG-based execution, and real-time action dispatch across 12+ EVM chains, powered by hardware-secured transaction signing and built for multi-tenant teams at scale.
+
+## System Topology
+
+<CardGroup cols={2}>
+  <Card title="Event Sources" icon="satellite-dish">
+    Stork Oracle (WebSocket), EVM Chains (HTTP poll), Cron Engine (scheduler), Webhooks (HTTP listener)
+  </Card>
+  <Card title="Master: Trigger Detection" icon="radar">
+    In-memory cache with O(1) lookup, rebuilt every 100ms. Trigger matching, cooldown enforcement, run limits.
+  </Card>
+  <Card title="Worker: DAG Execution" icon="microchip">
+    DAG traversal, expression resolution, conditional branching. Built-in actions (local) and dynamic dispatch (HTTP to
+    Actions).
+  </Card>
+  <Card title="Actions Runtime" icon="bolt">
+    TypeScript service executing blockchain ops, DeFi, data providers, messaging, and SaaS integrations. 280+ action
+    types across 21 providers.
+  </Card>
+  <Card title="API Server" icon="server">
+    REST + SSE + AI Agent. Workflow CRUD, real-time streaming, LLM-powered generation. JWT auth with multi-tenant org
+    scoping.
+  </Card>
+  <Card title="Infrastructure" icon="layer-group">
+    PostgreSQL + TimescaleDB, dual Redis (Ops + Data), Turnkey HSM (TX signing), Asynq (task queue).
+  </Card>
+</CardGroup>
+
+## Core Processes
+
+<AccordionGroup>
+  <Accordion title="API Server" icon="server">
+    The front door. REST API for workflow management, SSE streaming for real-time execution monitoring, and an AI chat endpoint for natural language workflow generation. Multi-tenant with org-level scoping and JWT authentication.
+
+    - **REST API**: Workflow CRUD, connector management, organization operations
+    - **SSE Streaming**: Real-time run progress and node execution events
+    - **AI Agent**: LLM with 17+ tools for natural language workflow generation
+    - **Auth**: JWT tokens, API keys (SHA-256 hashed), master keys
+
+  </Accordion>
+
+  <Accordion title="Master: Trigger Detection" icon="radar">
+    The sentinel. Continuous detection loops with in-memory workflow caches for sub-millisecond trigger matching. The cache is rebuilt from the database every 100ms, indexed by trigger type, EVM event signature, and Stork asset, providing O(1) hash lookups instead of table scans.
+
+    | Source | Method | Mode |
+    |--------|--------|------|
+    | Token prices | WebSocket (Stork Oracle) | Real-time push |
+    | EVM logs | HTTP polling + filter | 100ms loop |
+    | ERC-20 transfers | HTTP polling + filter | 100ms loop |
+    | Cron schedules | Cron expression scan | 100ms loop |
+    | Webhooks | HTTP endpoint listener | On-demand |
+    | Slack mentions | Slack API polling | Periodic |
+    | Polymarket events | WebSocket | Real-time push |
+    | Gmail | Pipedream polling | Periodic |
+
+    When a trigger matches, the Master checks cooldown windows and run limits before enqueuing a task for the Worker.
+
+  </Accordion>
+
+  <Accordion title="Worker: DAG Execution" icon="microchip">
+    The brain. Traverses workflow DAGs, evaluates conditional branches, resolves template variables, and dispatches actions.
+
+    - **DAG Traversal**: Walks the workflow graph, following `children` edges and entering `loopBody` for for-each nodes
+    - **Expression Resolution**: Resolves `{{node.result.field}}` references against ExecutionState
+    - **Built-in Actions**: Logic nodes executed in-process (if/else, loops, delays, filters, storage)
+    - **Dynamic Dispatch**: External actions delegated to the Actions runtime via HTTP
+    - **For-Each Budget**: Three hard limits prevent runaway loops: 100 iterations per loop, 10,000 total nodes, 10 nesting levels
+    - **Race Protection**: Compare-and-swap (CAS) on JSONB for wait resume, row-level locking for completion
+    - **Horizontal Scaling**: Add more workers for linear throughput increase
+
+  </Accordion>
+
+<Accordion title="Triage: Health Monitor" icon="heart-pulse">
+  The watchdog. 228+ health checks continuously monitor every action and integration. When failures are detected,
+  AI-powered diagnosis identifies root causes and suggests fixes. Auto-creates GitHub issues for persistent failures and
+  sends Slack alerts.
+</Accordion>
+
+  <Accordion title="Actions Runtime" icon="bolt">
+    A separate TypeScript service executing dynamic actions (blockchain transactions, API calls, and third-party integrations). 280+ action types across 21 providers, with all blockchain operations signed by Turnkey HSM.
+  </Accordion>
+</AccordionGroup>
+
+## Execution Pipeline
+
+The journey from event detection to action completion:
+
+<Steps>
+  <Step title="Detect">**Master** matches the trigger, validates cooldown and run limits.</Step>
+  <Step title="Enqueue">**Master** queues the task with dedup and priority routing via Redis.</Step>
+  <Step title="Init">**Worker** creates the run, initializes execution state, and copies the workflow definition.</Step>
+  <Step title="Traverse">
+    **Worker** walks the DAG, evaluates conditions, resolves expressions, and decrypts credentials.
+  </Step>
+  <Step title="Execute">
+    Built-in actions run locally in the **Worker**. Dynamic actions dispatch via HTTP to the **Actions** runtime.
+  </Step>
+  <Step title="Stream">**Worker** persists the result, emits an SSE event, and enqueues child nodes.</Step>
+  <Step title="Complete">**Worker** finalizes the run with race-safe row-level locking and CAS protection.</Step>
+</Steps>
+
+## Infrastructure
+
+<Tabs>
+  <Tab title="Dual Redis">
+    Separation of concerns prevents heavy cache operations from impacting queue latency:
+
+    - **Operational Redis**: Task queue (Asynq) and pub/sub events
+    - **Data Redis**: Caching, LLM payloads, and utility storage
+
+  </Tab>
+  <Tab title="PostgreSQL + TimescaleDB">
+    Workflows, runs, execution state, and audit trails. Distributed schema migrations use advisory locks for safe multi-instance deployments.
+  </Tab>
+  <Tab title="Turnkey HSM">
+    Hardware-secured transaction signing. Private keys are generated, stored, and used entirely within Turnkey's secure enclave. The application never sees them. Each organization gets an isolated sub-organization with its own key hierarchy.
+  </Tab>
+</Tabs>
+
+## Scalability
+
+| Property                  | Value                                                                                                     |
+| ------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Trigger loop interval     | 100ms                                                                                                     |
+| Trigger lookup            | O(1) via in-memory hash index                                                                             |
+| Task queue priorities     | 2 lanes (critical + default)                                                                              |
+| Task deduplication        | Deterministic IDs, 1-hour TTL                                                                             |
+| For-each budget           | 100 iterations x 10 levels x 10,000 total nodes                                                           |
+| Worker scaling            | Horizontal: N workers = Nx throughput                                                                     |
+| Cache stampede protection | Single-goroutine lock, 10ms polling, graceful degradation                                                 |
+| Supported EVM chains      | 12+ (Ethereum, Base, Arbitrum, Optimism, Polygon, BSC, Avalanche, Blast, Scroll, Linea, zkSync, and more) |

@@ -1,0 +1,110 @@
+---
+title: Actions Overview
+description: Built-in, dynamic, and logic actions in B3OS
+---
+
+# Actions Overview
+
+Actions are the building blocks of workflows. Each action node performs a specific operation and passes its result to downstream nodes.
+
+## Action Categories
+
+<Tabs>
+  <Tab title="Built-in Actions">
+    Execute directly within the workflow engine. Fast, no external calls.
+
+    | Action | Description |
+    |--------|-------------|
+    | `log` | Log a message with timestamp |
+    | `delay` | Pause execution for a duration |
+    | `filter` | Filter an array using MongoDB-style DSL |
+    | `format` | Format data into strings using templates |
+    | `pluck` | Extract a field from each object in an array |
+    | `regex` | Extract named capture groups from text |
+    | `storage` | Set workflow-scoped key-value pairs |
+    | `org-storage-get` | Read organization-scoped storage |
+    | `org-storage-set` | Write organization-scoped storage |
+    | `org-storage-list` | List organization storage keys |
+    | `code-transform` | Execute custom JavaScript transformations |
+    | `send-webhook` | Send HTTPS POST to an external URL |
+    | `trigger-workflow` | Trigger another workflow (fire-and-forget) |
+    | `deploy-contract` | Deploy a smart contract |
+    | `verify-contract` | Verify contract source code |
+    | `db-query` | Execute SQL on org's D1 database |
+    | `x402-endpoint` | Call a payment-gated API endpoint |
+
+    See [Built-in Actions](/actions/built-in) for full details.
+
+  </Tab>
+
+  <Tab title="Logic Actions">
+    Control flow actions that determine execution order.
+
+    | Action | Description |
+    |--------|-------------|
+    | `if` | Conditional branching (then/else) |
+    | `for-each` | Loop over an array, running a subgraph per item |
+    | `wait` | Pause execution until an external event resumes it |
+
+    <Note>The `for-each` action has hard limits: 100 iterations per loop, 10,000 total nodes, and 10 nesting levels.</Note>
+
+  </Tab>
+
+  <Tab title="Dynamic Actions">
+    Execute via the **b3os-actions** service. These interact with external APIs and blockchain networks.
+
+    | Category | Examples |
+    |----------|----------|
+    | **EVM On-Chain** | Send tokens, swap, deploy contracts, read/write contracts |
+    | **DeFi** | Aerodrome, Morpho, CoW Swap, Uniswap |
+    | **Data** | CoinGecko, Coinglass, DeBank, Dune, Zerion |
+    | **Messaging** | Slack, Discord, Telegram, Email |
+    | **Prediction Markets** | Polymarket trading, positions, orderbook |
+    | **Utility** | HTTP requests, AI chat, math operations |
+
+    See the [Actions tab](/actions/introduction) for provider-by-provider reference.
+
+  </Tab>
+</Tabs>
+
+## Using Actions
+
+### Props
+
+Actions are configured via `props` -- key-value pairs passed to the executor:
+
+```json
+{
+  "type": "log",
+  "props": {
+    "message": "Current price: {{trigger.result.price}}"
+  }
+}
+```
+
+### Connectors
+
+Actions that need credentials reference a **connector** (encrypted stored credentials):
+
+```json
+{
+  "type": "send-slack-message",
+  "connector": "my-slack-bot",
+  "props": {
+    "channel": "#alerts",
+    "text": "New event detected"
+  }
+}
+```
+
+<Tip>
+  Connectors keep sensitive credentials out of workflow definitions. See [Connectors](/platform/connectors) for details.
+</Tip>
+
+### Results
+
+Every action produces a result stored in `ExecutionState`. Access it from downstream nodes:
+
+```
+{{node-id.result.fieldName}}
+```

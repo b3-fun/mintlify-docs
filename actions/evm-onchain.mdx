@@ -1,0 +1,146 @@
+---
+title: EVM On-Chain Actions
+description: Blockchain transaction and smart contract actions
+---
+
+# EVM On-Chain Actions
+
+Execute blockchain transactions, interact with smart contracts, and manage tokens across EVM-compatible chains.
+
+<Tabs>
+  <Tab title="Token Operations">
+    <AccordionGroup>
+      <Accordion title="send-erc20-token" icon="paper-plane">
+        Send ERC-20 tokens to an address.
+
+        | Parameter | Type | Description |
+        |-----------|------|-------------|
+        | `tokenAddress` | string | ERC-20 contract address |
+        | `to` | string | Recipient address |
+        | `amount` | string | Amount to send |
+        | `chainId` | number | Target chain ID |
+      </Accordion>
+
+      <Accordion title="send-native-token" icon="paper-plane">
+        Send native tokens (ETH, etc.) to an address.
+
+        | Parameter | Type | Description |
+        |-----------|------|-------------|
+        | `to` | string | Recipient address |
+        | `amount` | string | Amount in wei |
+        | `chainId` | number | Target chain ID |
+      </Accordion>
+
+      <Accordion title="approve-erc20" icon="check">
+        Approve token spending for a spender address.
+      </Accordion>
+
+      <Accordion title="get-balance" icon="wallet">
+        Get ERC-20 token balance for an address.
+      </Accordion>
+
+      <Accordion title="get-native-balance" icon="wallet">
+        Get native token balance for an address.
+      </Accordion>
+
+      <Accordion title="get-allowance" icon="eye">
+        Get ERC-20 allowance for a spender.
+      </Accordion>
+
+      <Accordion title="get-token-metadata" icon="circle-info">
+        Get ERC-20 token metadata (name, symbol, decimals).
+      </Accordion>
+
+      <Accordion title="wrap-eth / unwrap-eth" icon="rotate">
+        Wrap ETH to WETH or unwrap WETH back to ETH.
+      </Accordion>
+    </AccordionGroup>
+
+  </Tab>
+
+  <Tab title="Smart Contracts">
+    <AccordionGroup>
+      <Accordion title="evm-read" icon="book-open">
+        Execute a read-only (view/pure) contract call.
+
+        | Parameter | Type | Description |
+        |-----------|------|-------------|
+        | `contractAddress` | string | Contract address |
+        | `abi` | object | Contract ABI |
+        | `functionName` | string | Function to call |
+        | `args` | array | Function arguments |
+        | `chainId` | number | Chain ID |
+      </Accordion>
+
+      <Accordion title="evm-write" icon="pen">
+        Execute a state-changing contract call (transaction).
+
+        | Parameter | Type | Description |
+        |-----------|------|-------------|
+        | `contractAddress` | string | Contract address |
+        | `abi` | object | Contract ABI |
+        | `functionName` | string | Function to call |
+        | `args` | array | Function arguments |
+        | `chainId` | number | Chain ID |
+        | `value` | string | ETH value to send (optional) |
+      </Accordion>
+
+      <Accordion title="deploy-contract" icon="file-contract">
+        Deploy a smart contract to a network.
+      </Accordion>
+
+      <Accordion title="get-transaction-details" icon="magnifying-glass">
+        Get details of a transaction by hash.
+      </Accordion>
+    </AccordionGroup>
+
+  </Tab>
+
+  <Tab title="DEX Swaps">
+    <AccordionGroup>
+      <Accordion title="cow-swap-gasless" icon="gas-pump">
+        Execute a gasless swap via CoW Protocol (MEV-protected).
+      </Accordion>
+
+      <Accordion title="relay-swap" icon="arrow-right-arrow-left">
+        Swap tokens via 1inch/Relay relayer.
+      </Accordion>
+
+      <Accordion title="zero-ex-swap / zero-ex-quote" icon="money-bill-transfer">
+        Swap tokens or get quotes via 0x Protocol.
+      </Accordion>
+
+      <Accordion title="permit-relayer-swap" icon="signature">
+        Swap using ERC-2612 permit signatures (gasless approval).
+      </Accordion>
+    </AccordionGroup>
+
+  </Tab>
+
+  <Tab title="Liquidity & More">
+    ### Uniswap V2
+    - `v2-add-liquidity`: Add liquidity to a Uniswap V2 pool
+    - `v2-remove-liquidity`: Remove liquidity from a V2 pool
+
+    ### Uniswap V3
+    - `v3-add-liquidity`: Add concentrated liquidity
+    - `v3-remove-liquidity`: Remove concentrated liquidity
+
+    ### Uniswap V4
+    - `v4-add-liquidity`: Add liquidity to V4 hooks-enabled pools
+    - `v4-remove-liquidity`: Remove V4 liquidity
+
+    ### Cross-Chain (AnySpend)
+    - `disperse-erc20-token`: Send ERC-20 tokens to multiple recipients
+    - `disperse-native-token`: Send native tokens to multiple recipients
+
+    ### Privacy (Railgun)
+    - `create-wallet`: Create a RAILGUN shielded wallet
+    - `shield`: Shield tokens for private use
+    - `unshield`: Unshield tokens back to public
+    - `private-transfer`: Send tokens privately
+    - `query-balance`: Query shielded balance
+    - `unshield-via-relayer`: Unshield using a relayer for gas
+
+  </Tab>
+</Tabs>

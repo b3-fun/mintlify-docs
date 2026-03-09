@@ -1,0 +1,58 @@
+---
+title: Connectors
+description: Encrypted credential management for workflow actions
+---
+
+# Connectors
+
+Connectors store encrypted credentials that actions reference at runtime. They keep sensitive data (API keys, tokens, private keys) out of workflow definitions.
+
+## How Connectors Work
+
+<Steps>
+  <Step title="Create a connector">Add a connector with a name and credential values via the dashboard or API.</Step>
+  <Step title="Reference it in a workflow node">Point your action node to the connector by name.</Step>
+  <Step title="Runtime decryption">
+    At execution time, the engine decrypts the connector and injects credentials into the action.
+  </Step>
+</Steps>
+
+```json
+{
+  "type": "send-slack-message",
+  "connector": "my-slack-bot",
+  "props": {
+    "channel": "#alerts",
+    "text": "Hello from B3OS"
+  }
+}
+```
+
+## Credential Types
+
+| Type            | Use Case                                                   |
+| --------------- | ---------------------------------------------------------- |
+| **API Key**     | Third-party service authentication (CoinGecko, Dune, etc.) |
+| **Bot Token**   | Slack, Discord, Telegram bots                              |
+| **OAuth Token** | Gmail, Google Sheets via Pipedream                         |
+| **Wallet Key**  | Blockchain transaction signing                             |
+
+## Security
+
+<Callout icon="shield-halved" color="#4CAF50">
+  All credentials are encrypted at rest with AES-256-GCM. Decryption happens only during action execution.
+</Callout>
+
+- Connector values are never exposed in API responses or run logs
+- Webhook headers marked as sensitive are also encrypted
+
+## Managing Connectors
+
+- **Create**: Add a new connector with encrypted credentials
+- **Update**: Rotate credentials without changing workflow definitions
+- **Delete**: Remove a connector (workflows referencing it will fail)
+
+<Tip>
+  Connectors are scoped to an organization and available to all workflows within it. Rotating a connector's credentials
+  automatically updates every workflow that references it.
+</Tip>

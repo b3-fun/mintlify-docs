@@ -1,0 +1,140 @@
+---
+title: Expressions
+description: Template syntax for wiring data between nodes
+---
+
+# Expressions
+
+Expressions let you pass data between nodes using template syntax. They are resolved at runtime before each node executes.
+
+## Basic Syntax
+
+Reference any node's result with double curly braces:
+
+```
+{{nodeId.result.fieldName}}
+```
+
+<CodeGroup>
+```text Trigger Output
+{{trigger.result.amount}}
+```
+
+```text Action Node Result
+{{action-1.result.price}}
+```
+
+```text Nested Field Access
+{{action-2.result.data.items[0]}}
+```
+
+</CodeGroup>
+
+## Special Variables
+
+<Tabs>
+  <Tab title="Storage">
+    Access workflow-scoped and organization-scoped persistent storage:
+
+    <CodeGroup>
+    ```text Workflow Storage
+    {{$storage.key}}
+    ```
+
+    ```text Org Storage (default store)
+    {{$org.storage.key}}
+    ```
+
+    ```text Org Storage (named store)
+    {{$org.stores.storeName.key}}
+    ```
+    </CodeGroup>
+
+  </Tab>
+
+  <Tab title="Props">
+    Access template parameters (when workflow is used as a template):
+
+    ```
+    {{$props.key}}
+    ```
+
+  </Tab>
+
+  <Tab title="Loop Variables">
+    Inside a `for-each` node's loop body:
+
+    <CodeGroup>
+    ```text Current Item
+    {{$item}}
+    ```
+
+    ```text Current Index
+    {{$index}}
+    ```
+    </CodeGroup>
+
+    For nested `for-each` nodes, access parent loop variables:
+
+    <CodeGroup>
+    ```text Parent Loop Item
+    {{$parent_item}}
+    ```
+
+    ```text Specific Ancestor Loop
+    {{$for.nodeId.item}}
+    {{$for.nodeId.index}}
+    ```
+    </CodeGroup>
+
+  </Tab>
+</Tabs>
+
+## Type Preservation
+
+<Info>
+  Expressions preserve types. If a referenced value is a number, the resolved value is a number, not a string. This
+  matters for condition evaluation in `if` nodes and numeric comparisons.
+</Info>
+
+## Condition DSL
+
+The `if` action uses a condition DSL that supports MongoDB-style operators:
+
+```json
+{
+  "condition": {
+    "$gt": ["{{action-1.result.price}}", 100]
+  }
+}
+```
+
+Supported operators:
+
+| Operator | Description                       |
+| -------- | --------------------------------- |
+| `$eq`    | Equal                             |
+| `$ne`    | Not equal                         |
+| `$gt`    | Greater than                      |
+| `$gte`   | Greater than or equal             |
+| `$lt`    | Less than                         |
+| `$lte`   | Less than or equal                |
+| `$in`    | Value in array                    |
+| `$nin`   | Value not in array                |
+| `$and`   | Logical AND (array of conditions) |
+| `$or`    | Logical OR (array of conditions)  |
+
+## Filter DSL
+
+The `filter` action uses the same DSL to filter arrays:
+
+```json
+{
+  "array": "{{action-1.result.items}}",
+  "filter": {
+    "$gt": ["{{@price}}", 100]
+  }
+}
+```
+
+<Tip>Inside filter expressions, `{{@field}}` references fields on each array item.</Tip>

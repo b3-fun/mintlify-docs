@@ -1,0 +1,49 @@
+---
+title: Trigger Reference
+description: Complete reference table of all B3OS triggers
+---
+
+# Trigger Reference
+
+Quick reference for all available trigger types.
+
+<Note>For detailed configuration examples and filter options, see [Triggers](/platform/triggers).</Note>
+
+| Trigger Type                      | Category    | Description                      | Mechanism                |
+| --------------------------------- | ----------- | -------------------------------- | ------------------------ |
+| `manual`                          | General     | Trigger on demand via UI or API  | Direct invocation        |
+| `cronjob`                         | Schedule    | Run on a cron schedule           | Internal scheduler       |
+| `webhook`                         | HTTP        | Trigger via HTTP POST            | Webhook endpoint         |
+| `evm-log`                         | Blockchain  | Smart contract event emission    | Polling `eth_getLogs`    |
+| `erc20-receive`                   | Blockchain  | ERC-20 token received at address | Polling `eth_getLogs`    |
+| `erc20-send`                      | Blockchain  | ERC-20 token sent from address   | Polling `eth_getLogs`    |
+| `token-price-cexes`               | Market Data | Token price crosses threshold    | WebSocket (Stork Oracle) |
+| `slack-mentions`                  | Messaging   | Bot mentioned in Slack channel   | Slack API polling        |
+| `gmail-new-email-received`        | Email       | New email in inbox               | Pipedream polling        |
+| `gmail-new-email-matching-search` | Email       | Email matching search query      | Pipedream polling        |
+| `polymarket-market-close`         | Prediction  | Market resolves                  | WebSocket                |
+| `polymarket-market-trade`         | Prediction  | Trade on a market                | WebSocket (CLOB)         |
+| `polymarket-new-market`           | Prediction  | New market created               | WebSocket                |
+| `polymarket-user-bet`             | Prediction  | User places a bet                | On-chain event (Polygon) |
+
+## Trigger Configuration
+
+All triggers are configured via `props` in the workflow definition. See [Triggers](/platform/triggers) for detailed configuration examples and filter options for each type.
+
+## Wait Node Resumption
+
+<Info>
+  Some triggers also support **wait node resumption** -- pausing a workflow mid-execution until a matching event occurs.
+</Info>
+
+| Wait Trigger        | Description                        |
+| ------------------- | ---------------------------------- |
+| `evm-log`           | Wait for a specific contract event |
+| `erc20-receive`     | Wait for token receipt             |
+| `erc20-send`        | Wait for token send                |
+| `token-price-cexes` | Wait for price condition           |
+
+<Tip>
+  Use the `wait` action in your workflow, and configure it with a trigger type and props. The workflow pauses until the
+  event fires or the timeout expires.
+</Tip>
